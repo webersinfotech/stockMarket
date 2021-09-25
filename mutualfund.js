@@ -38,7 +38,7 @@ const { performance } = require('perf_hooks');
     if (cluster.isMaster) {
         console.log(`Primary ${process.pid} is running`);
 
-        const connections = new Array(15).fill(0)
+        const connections = new Array(4).fill(0)
 
         for (let [index, connection] of connections.entries()) {
             await launchCluster()
@@ -46,11 +46,11 @@ const { performance } = require('perf_hooks');
 
         async function launchCluster() {
             const clusterLaunch = cluster.fork()
-            // clusterLaunch.on('exit', async (worker, code, signal) => {
-            //     console.log(`worker died`);
+            clusterLaunch.on('exit', async (worker, code, signal) => {
+                console.log(`worker died`);
     
-            //     await launchCluster()
-            // });
+                await launchCluster()
+            });
             await timeout(3000)
             return
         }
@@ -61,7 +61,7 @@ const { performance } = require('perf_hooks');
             try {
                 mutualfunds = await knex.select('id', 'code', 'schemeInfoStatus').from('mutualFund').where({
                     status: 'NOT STARTED'
-                }).limit(2000)
+                }).limit(200)
 
                 console.log('mutualfunds Fetched')
 
